@@ -33,4 +33,28 @@ while True:
             tp=(int(lm[TH].x*w),int(lm[TH].y*h));ip=(int(lm[IX].x*w),int(lm[IX].y*h))
             cv2.circle(img, tp, 10, (255, 0, 0), cv2.FILLED);cv2.circle(img, ip, 10, (255, 0, 0), cv2.FILLED)
             cv2.line(img, tp, ip, (0, 255, 0), 3)
-            dist=float(np.hypot)
+            dist=float(np.hypot(ip[0]-tp[0], ip[1]-tp[1]))
+
+            if label=="Left":
+                v=np.interp(dist, [30, 300], [minv, maxv])
+                try: volctl.SetMasterVolumeLevel(v, None)
+                except Exception as e: print(f"Volume control error: {e}")
+                bar=int(np.interp(dist, [30, 300], [400, 150])); pct=int(np.interp(dist, [30, 300], [0, 100]))
+                cv2.rectangle(img, (50, 150), (85, 400), (255, 0, 0), 2);cv2.rectangle(img, (50, bar), (85, 400), (255, 0, 0), cv2.FILLED)
+                cv2.putText(img, f"{pct}%", (40, 450), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 3)
+            elif label=="Right":
+                b=int(np.interp(dist, [30, 300], [0, 100]))
+                try: sbc.set_brightness(b)
+                except Exception as e: print(f"Brightness control error: {e}")
+                bar=int(np.interp(dist, [30, 300], [400, 150])); x1,x2=w-85,w-50
+                cv2.rectangle(img, (x1, 150), (x2, 400), (0, 255, 0), 2);cv2.rectangle(img, (x1, bar), (x2, 400), (0, 255, 0), cv2.FILLED)
+                cv2.putText(img, f"{b}%", (w-100, 450), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)
+    cv2.imshow(WIN, img)
+    k=cv2.waitKey(1) & 0xFF
+    if k in(27, ord('q')): break
+    try:
+        if cv2.getWindowProperty(WIN, cv2.WND_PROP_VISIBLE) < 1: break
+    except Exception as e:
+        break
+
+cap.release();cv2.destroyAllWindows()
